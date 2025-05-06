@@ -614,13 +614,266 @@ class HospitalManagementSystem{
         };
     };
 
+    void editPatient() {
+        if (patientsHead == nullptr) {
+            cout << "\nNo patients to edit.\n";
+            return;
+        }
+        
+        int id;
+        cout << "\n--- Edit Patient ---\n";
+        cout << "Enter Patient ID to edit: ";
+        cin >> id;
+        
+        // Find the patient
+        Patient* patient = findPatientById(id);
+        if (patient == nullptr) {
+            cout << "Error: Patient with ID " << id << " does not exist!\n";
+            return;
+        }
+        
+        cin.ignore(); // Clear input buffer
+        
+        string name, dob, gender;
+        cout << "Enter new name (leave blank to keep current: " << patient->name << "): ";
+        getline(cin, name);
+        if (!name.empty()) {
+            patient->name = name;
+        }
+        
+        cout << "Enter new date of birth (leave blank to keep current: " << patient->dob << "): ";
+        getline(cin, dob);
+        if (!dob.empty()) {
+            patient->dob = dob;
+        }
+        
+        cout << "Enter new gender (M/F) (leave blank to keep current: " << patient->gender << "): ";
+        getline(cin, gender);
+        if (!gender.empty()) {
+            patient->gender = gender;
+        }
+        
+        cout << "Patient information updated successfully!\n";
+    }
+    
+    // Function to edit a doctor
+    void editDoctor() {
+        if (doctorsHead == nullptr) {
+            cout << "\nNo doctors to edit.\n";
+            return;
+        }
+        
+        int id;
+        cout << "\n--- Edit Doctor ---\n";
+        cout << "Enter Doctor ID to edit: ";
+        cin >> id;
+        
+        // Find the doctor
+        Doctor* doctor = findDoctorById(id);
+        if (doctor == nullptr) {
+            cout << "Error: Doctor with ID " << id << " does not exist!\n";
+            return;
+        }
+        
+        cin.ignore(); // Clear input buffer
+        
+        string name, specialization;
+        int maxAppointments;
+        
+        cout << "Enter new name (leave blank to keep current: " << doctor->name << "): ";
+        getline(cin, name);
+        if (!name.empty()) {
+            doctor->name = name;
+        }
+        
+        cout << "Enter new specialization (leave blank to keep current: " << doctor->specialization << "): ";
+        getline(cin, specialization);
+        if (!specialization.empty()) {
+            doctor->specialization = specialization;
+        }
+        
+        cout << "Enter new maximum appointments (leave 0 to keep current: " << doctor->max_appointments << "): ";
+        cin >> maxAppointments;
+        if (maxAppointments > 0) {
+            // Ensure the new maximum is not less than current appointments
+            if (maxAppointments < doctor->current_appointments) {
+                cout << "Warning: New maximum is less than current appointments. ";
+                cout << "Some appointments may need to be rescheduled.\n";
+            }
+            doctor->max_appointments = maxAppointments;
+        }
+        
+        cout << "Doctor information updated successfully!\n";
+    }
+    
+    // Function to edit an appointment
+    void editAppointment() {
+        if (appointmentsHead == nullptr) {
+            cout << "\nNo appointments to edit.\n";
+            return;
+        }
+        
+        int id;
+        cout << "\n--- Edit Appointment ---\n";
+        cout << "Enter Appointment ID to edit: ";
+        cin >> id;
+        
+        // Find the appointment
+        Appointment* appointment = findAppointmentById(id);
+        if (appointment == nullptr) {
+            cout << "Error: Appointment with ID " << id << " does not exist!\n";
+            return;
+        }
+        
+        int patientId, doctorId;
+        string date;
+        
+        cout << "Enter new Patient ID (enter 0 to keep current: " << appointment->patient_id << "): ";
+        cin >> patientId;
+        if (patientId > 0) {
+            // Check if patient exists
+            if (findPatientById(patientId) == nullptr) {
+                cout << "Error: Patient with ID " << patientId << " does not exist!\n";
+                return;
+            }
+            appointment->patient_id = patientId;
+        }
+        
+        cout << "Enter new Doctor ID (enter 0 to keep current: " << appointment->doctor_id << "): ";
+        cin >> doctorId;
+        if (doctorId > 0) {
+            // First, decrement current doctor's appointment count
+            Doctor* currentDoctor = findDoctorById(appointment->doctor_id);
+            if (currentDoctor != nullptr) {
+                currentDoctor->current_appointments--;
+            }
+            
+            // Check if new doctor exists
+            Doctor* newDoctor = findDoctorById(doctorId);
+            if (newDoctor == nullptr) {
+                cout << "Error: Doctor with ID " << doctorId << " does not exist!\n";
+                // Restore previous doctor's count
+                if (currentDoctor != nullptr) {
+                    currentDoctor->current_appointments++;
+                }
+                return;
+            }
+            
+            // Check if new doctor has reached maximum appointments
+            if (newDoctor->current_appointments >= newDoctor->max_appointments) {
+                cout << "Error: The selected doctor is fully booked!\n";
+                // Restore previous doctor's count
+                if (currentDoctor != nullptr) {
+                    currentDoctor->current_appointments++;
+                }
+                return;
+            }
+            
+            // Update the appointment
+            appointment->doctor_id = doctorId;
+            newDoctor->current_appointments++;
+        }
+        
+        cin.ignore(); // Clear input buffer
+        
+        cout << "Enter new date (leave blank to keep current: " << appointment->appointment_date << "): ";
+        getline(cin, date);
+        if (!date.empty()) {
+            appointment->appointment_date = date;
+        }
+        
+        cout << "Appointment updated successfully!\n";
+    }
+
+
     void showMenu(){
         int choice;
         bool running = true;
 
         while(running){
-            
+            cout<<"\n ====== Ruhengeri Referral hospital management system=====\n"<<endl;
+            cout << "1: Register Patient\n";
+            cout << "2: Register Doctor\n";
+            cout << "3: Register Appointment\n";
+            cout << "4: Display Patients\n";
+            cout << "5: Display Doctors\n";
+            cout << "6: Display Appointments\n";
+            cout << "7: Search Patient by Name\n";
+            cout << "8: Sort Doctors by Specialization\n";
+            cout << "9: Delete Patient\n";
+            cout << "10: Delete Doctor\n";
+            cout << "11: Delete Appointment\n";
+            cout << "12: Edit Patient\n";
+            cout << "13: Edit Doctor\n";
+            cout << "14: Edit Appointment\n";
+            cout << "15: Display Waiting List\n";
+            cout << "16: Exit\n";
+            cout << "Enter your choice: ";
+            cin >> choice;
+
+            switch(choice){
+                case 1:
+                registerPatient();
+                break;
+                case 2:
+                registerDoctor();
+                break;
+                case 3:
+                registerAppointment();
+                break;
+                case 4:
+                displayPatients();
+                break;
+                case 5:
+                displayDoctors();
+                break;
+                case 6:
+                displayAppointments();
+                break;
+                case 7:
+                searchPatientByName();
+                break;
+                case 8:
+                sortDoctorBySpecialization();
+                break;
+                case 9:
+                deletePatient();
+                break;
+                case 10:
+                deleteDoctor();
+                break;
+                case 11:
+                deleteAppointment();
+                break;
+                case 12:
+                editPatient();
+                break;
+                case 13:
+                    editDoctor();
+                    break;
+                case 14:
+                    editAppointment();
+                    break;
+                case 15:
+                    displayWaitingList();
+                    break;
+                case 16:
+                running=false;
+                cout<< "Thank you for using our system \n";
+                break;
+                default:
+                cout<<"Invalid choice. please try again. \n";
+            };
         };
     };
+};
+
+
+int main(){
+    HospitalManagementSystem hms;
+    cout<<"Welcome to Ruhengeri Hospital system!!";
+    hms.showMenu();
+
+    return 0;
 };
 
